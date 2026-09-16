@@ -305,3 +305,219 @@ Perangkat lunak ini didistribusikan di bawah ketentuan lisensi kepemilikan ekskl
 **PERJANJIAN LISENSI PERANGKAT LUNAK PROPRIETARI**  
 **HAK CIPTA © 2026 TUANBAGUES & GOSMART TEKNOLOGI CREATIVE. SEMUA HAK DILINDUNGI UNDANG-UNDANG.**  
 Lihat berkas [LICENSE](LICENSE) untuk klausul dan ketentuan hukum lengkap.
+
+
+NB 
+Telah berhasil dibangun dan diuji sistem modular mandiri (Dihosting Sendiri) penampil iklan, injeksi tautan otomatis (Naskah Lengkapseperti Linkvertise), serta sistem verifikasiAnti-Bypassberkeamanan tinggi dengan hash sekali pakai (10 detik) dan token 64 karakter.
+1. Arsitektur dan Komponen Sistem
+Sistem ini dirancang secara modular ke dalam 3 komponen independen:
+code
+Kode
+[ Pengunjung ]
+      │ (1) Klik link eksternal di situs publisher
+      ▼
+┌─────────────────────────────────────────────────────────────┐
+│ 1. Frontend Injected Script (public/fullscript.js)          │
+│    - Memindai DOM (DOMContentLoaded + MutationObserver)     │
+│    - Evaluasi Whitelist & Blacklist domain                   │
+│    - Membungkus link: https://adserver/redirect?url=TARGET  │
+└──────────────────────────────┬──────────────────────────────┘
+                               │ (2) Pengalihan ke Gateway Iklan
+                               ▼
+┌─────────────────────────────────────────────────────────────┐
+│ 2. Ad Server & Gateway Pengalihan (server.js / API)         │
+│    - Menampilkan interstitial ad (Simulasi 3 detik)         │
+│    - Generate 64-karakter hash kriptografis (?hash=xyz...)  │
+│    - Simpan hash ke memori/Redis dengan TTL = 10 detik      │
+│    - Mengalihkan ke: TARGET_URL?hash=64_CHAR_HEX            │
+└──────────────────────────────┬──────────────────────────────┘
+                               │ (3) Redirect kembali ke tujuan
+                               ▼
+┌─────────────────────────────────────────────────────────────┐
+│ 3. Target / Publisher Backend (Anti-Bypass Engine)          │
+│    - Menangkap parameter ?hash dari URL                     │
+│    - Request POST ke: /api/v1/anti_bypassing                │
+│      Query/Body: ?token=64_CHAR_TOKEN&hash=64_CHAR_HASH    │
+│    - Respon: {"response": true} atau {"response": false}    │
+│    - Server Verifikasi menghapus hash seketika (Single-Use) │
+│    - Konten hanya dibuka jika verifikasi = TRUE             │
+└─────────────────────────────────────────────────────────────┘
+2. Draf Kode Modular
+A. Komponen 1: Injeksi Skrip Frontend (public/fullscript.js)
+Diletakkan di dalam tag<head>situs penerbit untuk membungkus tautan keluar secara otomatis dengan dukungan Dynamic DOM (Pengamat Mutasi), filter Daftar Putih, dan Daftar Hitam:
+code
+HTML
+<!-- Masukkan di dalam tag <head> website publisher -->
+<script>
+  window.FullScriptConfig = {
+    adServerUrl: "https://your-ad-server.com/api/redirect",
+    publisherToken: "12cfd687bc39171533f0eb5b0d9bbf708412cb62502693cb8b15ca39d81777c9",
+    whitelist: ["trusted-download.com"], // Kosongkan [] jika semua link eksternal ingin dimonetisasi
+    blacklist: ["facebook.com", "twitter.com", "internal.com"],
+    openNewTab: true,
+    debug: false
+  };
+</script>
+<script src="https://your-ad-server.com/fullscript.js" async defer></script>
+B. Komponen 2: Server Backend & Validasi Anti-Bypass (server.js)
+Tetapkan endpoint untuk mengaktifkan iklan dan verifikasiPOST /api/v1/anti_bypassing:
+code
+JavaScript
+// server.js - Node.js & Express
+const express = require('express');
+const crypto = require('crypto');
+const app = express();
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Penyimpanan hash dalam memori (Dalam skala besar gunakan Redis)
+const hashStorage = new Map();
+
+// Token publisher sah (64 Karakter Hex)
+const AUTHORIZED_TOKENS = new Set([
+  "12cfd687bc39171533f0eb5b0d9bbf708412cb62502693cb8b15ca39d81777c9"
+]);
+
+const HASH_TTL_MS = 10000; // 10 Detik
+
+/**
+ * 1. Endpoint Redirect Iklan
+ */
+app.get('/redirect', (req, res) => {
+  const targetUrl = req.query.url || req.query.target;
+  const token = req.query.token || Array.from(AUTHORIZED_TOKENS)[0];
+
+  if (!targetUrl) return res.status(400).send("Target URL wajib diisi.");
+
+  // Generate 64-karakter hash kriptografis unik
+  const generatedHash = crypto.randomBytes(32).toString('hex');
+  const now = Date.now();
+
+  hashStorage.set(generatedHash, {
+    target: targetUrl,
+    token: token,
+    expiresAt: now + HASH_TTL_MS
+  });
+
+  // Hapus dari memori setelah batas waktu
+  setTimeout(() => hashStorage.delete(generatedHash), HASH_TTL_MS + 2000);
+
+  const separator = targetUrl.includes('?') ? '&' : '?';
+  const finalUrl = `${targetUrl}${separator}hash=${generatedHash}`;
+
+  // Tampilkan jeda iklan (3 detik) sebelum redirect
+  res.send(`
+    <html>
+      <head><title>Memverifikasi Iklan...</title></head>
+      <body style="text-align:center; padding-top:60px; font-family:sans-serif; background:#0f172a; color:#f8fafc;">
+        <h2>Menyiapkan Pengalihan Aman...</h2>
+        <p>Harap tunggu 3 detik selagi sistem memverifikasi sesi penayangan.</p>
+        <script>
+          setTimeout(function() {
+            window.location.href = "${finalUrl}";
+          }, 3000);
+        </script>
+      </body>
+    </html>
+  `);
+});
+
+/**
+ * 2. Endpoint Verifikasi Anti-Bypass (POST /api/v1/anti_bypassing)
+ */
+app.post('/api/v1/anti_bypassing', (req, res) => {
+  const token = req.query.token || req.body.token;
+  const hash = req.query.hash || req.body.hash;
+
+  // 1. Validasi panjang token dan hash (64 karakter)
+  if (!token || token.length !== 64 || !hash || hash.length !== 64) {
+    return res.json({ response: "Invalid token." });
+  }
+
+  // 2. Validasi token publisher
+  if (!AUTHORIZED_TOKENS.has(token)) {
+    return res.json({ response: "Invalid token." });
+  }
+
+  // 3. Periksa keberadaan hash
+  const record = hashStorage.get(hash);
+  if (!record || Date.now() > record.expiresAt) {
+    if (record) hashStorage.delete(hash);
+    return res.json({ response: false }); // Kedaluwarsa atau palsu
+  }
+
+  // 4. Kebijakan Single-Use: Langsung bakar/hapus hash setelah verifikasi pertama
+  hashStorage.delete(hash);
+
+  return res.json({ response: true });
+});
+
+app.listen(3000, () => console.log("Ad Server berjalan di port 3000"));
+C. Komponen 3: Modul Kontrol Iklan & Safe Pop-Under (public/ad-controller.js)
+Mematuhi regulasi browser modern (Kebijakan Gerakan Pengguna) agar pembukaan pop-under/tab baru tidak diblokir oleh browser:
+code
+JavaScript
+// ad-controller.js
+const adController = new GoSmartAdController({
+  adUrl: "https://your-ad-server.com/api/redirect?direct=true&url=" + encodeURIComponent("https://example.com/ad-slot"),
+  frequencyMinutes: 15, // Capping frekuensi 1x per 15 menit per user
+  triggerSelector: "a, button",
+  excludeSelector: ".no-ad-trigger, nav a"
+});
+adController.init(); // Pasang event listener klik aman
+3. Contoh Verifikasi di Sisi Server Publisher (PHP)
+Pada halaman konten tujuan milik penerbit (misalunduh.php), proteksi tautan dengan kode berikut:
+code
+PHP
+<?php
+$publisherToken = "12cfd687bc39171533f0eb5b0d9bbf708412cb62502693cb8b15ca39d81777c9";
+$adServerApi    = "https://your-ad-server.com/api/v1/anti_bypassing";
+$userHash       = isset($_GET['hash']) ? trim($_GET['hash']) : '';
+
+if (empty($userHash) || strlen($userHash) !== 64) {
+    http_response_code(403);
+    die("Akses Ditolak: Parameter hash tidak valid.");
+}
+
+$verifyUrl = $adServerApi . "?token=" . urlencode($publisherToken) . "&hash=" . urlencode($userHash);
+
+$ch = curl_init($verifyUrl);
+curl_setopt($ch, CURLOPT_POST, true);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLOPT_TIMEOUT, 5);
+$response = curl_exec($ch);
+curl_close($ch);
+
+$data = json_decode($response, true);
+
+if (isset($data['response']) && $data['response'] === true) {
+    // SUKSES: Pengguna telah melewati iklan secara sah
+    echo "<h1>Akses Terverifikasi! File unduhan siap.</h1>";
+} else {
+    // GAGAL: Terdeteksi bypass, hash kedaluwarsa, atau sudah dipakai
+    http_response_code(403);
+    die("Akses Ditolak: Hash tidak sah atau masa berlaku 10 detik telah habis.");
+}
+?>
+4. Ringkasan Pengujian Anti-Bypass melalui cURL
+code
+Pesta
+# Permintaan POST verifikasi:
+curl -X POST "http://localhost:3000/api/v1/anti_bypassing?token=12cfd687bc39171533f0eb5b0d9bbf708412cb62502693cb8b15ca39d81777c9&hash=YOUR_64_CHAR_HASH"
+Panggilan ke-1 (Valid & < 10 detik):{"respons": benar}(Hash langsung ditolak).
+Panggilan ke-2 (Hash yang sama diuji ulang):{"respons": salah}(Kebijakan Sekali Pakai Bukti bekerja sempurna).
+Panggilan setelah > 10 detik:{"respons": salah}(Otomatis berg).
+Token salah / tidak 64 karakter:{"response": "Token tidak valid."}.
+5. Berkas yang Dibuat dalam Proyek
+README.md: Dokumentasi lengkap arsitektur, instalasi, dan panduan penerbit.
+LISENSI: Perjanjian Lisensi Perangkat Lunak Proprietari resmiTUANBAGUES & GoSmart Teknologi Kreatif (2026).
+server.js: Standalone Express Backend siap jalan dengannode server.js.
+public/fullscript.js: Skrip injeksi klien produksi denganPengamat Mutasi.
+public/ad-controller.js: Modul kontrol popup/pop-under ramah kebijakan browser.
+app/api/v1/anti_bypassing/route.ts: Verifikasi API Anti-Bypass asli.
+app/api/redirect/route.ts: Iklan Gateway & Generator Hash 10 detik.
+aplikasi/halaman.tsx: Dasbor visual interaktif dengan Publisher Sandbox, Ad-Step Gateway Simulator, Live Memory Inspector, dan Snippet Generator.
+flag
+Pos pemeriksaan
+
