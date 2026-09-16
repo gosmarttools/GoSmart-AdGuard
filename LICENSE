@@ -1,0 +1,38 @@
+PERJANJIAN LISENSI PERANGKAT LUNAK PROPRIETARI
+HAK CIPTA © 2026 TUANBAGUES & GOSMART TEKNOLOGI CREATIVE. SEMUA HAK DILINDUNGI UNDANG-UNDANG.
+
+PEMBUKAAN
+Perjanjian Lisensi Perangkat Lunak Milik Perusahaan ini ("Perjanjian") dibuat dan disahkan secara hukum untuk mengatur kepemilikan, penggunaan, dan pendistribusian platform "GoSmart Theme - Platform Marketplace Tema Toko Online" beserta seluruh modul terkait, dikembangkan oleh Tuanbagues (tuanbagues@gmail.com) bersama GoSmart Teknologi Creative sebagai Pemegang Hak Cipta yang sah. Dengan mengakses, melihat, mengompilasi, menyimpan, atau menggunakan perangkat lunak ini, setiap pihak mengakui bahwa mereka telah membaca, memahami, dan setuju untuk terikat secara ketat oleh semua ketentuan hukum yang tercantum dalam Perjanjian ini.
+
+PASAL 1: DEFINISI DAN RUANG LINGKUP
+1. "Perangkat Lunak" mencakup semua bagian dari kode sumber (source code), modul komponen React 19, skrip TypeScript, stylesheet Tailwind CSS, pustaka, basis data, antarmuka pengguna (UI/UX), modul validasi lisensi, generator sertifikat lisensi, berkas format multi-template (WordPress WooCommerce PHP, Google Blogger XML, HTML5 Statis, React), dokumentasi teknis, dan aset multimedia.
+2. "Pemegang Hak Cipta" mengacu pada badan hukum resmi GoSmart Teknologi Creative dan Tuanbagues sebagai pencipta, administrator utama, dan pemilik sah hak kekayaan intelektual.
+3. "Pemegang Lisensi Pembeli" mengacu pada pihak perorangan atau badan usaha yang telah menyelesaikan proses transaksi pembelian resmi melalui sistem pembayaran GoSmart dan memperoleh Kunci Lisensi Digital (License Key) yang sah.
+4. "Pihak Ketiga" berarti setiap individu, korporasi, persekutuan, atau entitas di luar Pemegang Hak Cipta dan Pemegang Lisensi yang sah.
+
+PASAL 2: HAK PENGGUNAAN PEMBELI TEMA (COMMERCIAL LICENSE)
+1. Pembeli yang telah menyelesaikan transaksi pembayaran resmi berhak menggunakan berkas paket tema untuk toko online pribadi, toko klien, atau situs komersial milik pemegang lisensi.
+2. Hak lisensi berlaku seumur hidup (Lifetime License) untuk domain tak terbatas (Unlimited Domains), mencakup akses terhadap pembaruan berkas dan validasi melalui sistem resmi GoSmart.
+3. Hak penggunaan ini bersifat non-eksklusif dan tidak mengalihkan hak cipta kode sumber dasar (master platform) kepada pembeli.
+
+PASAL 3: PEMBATASAN KETAT DAN LARANGAN MUTLAK
+Kecuali diizinkan secara tertulis oleh Pemegang Hak Cipta, pihak mana pun dilarang keras untuk:
+1. Redistribusi Tanpa Izin: Menjual kembali (resell), membagikan secara gratis (nulled/pirated), mengunggah ke forum publik, atau mendistribusikan ulang kode sumber master platform GoSmart kepada pihak ketiga.
+2. Kloning Platform: Meniru sistem validasi lisensi terpusat, mengelabui algoritma verifikasi lisensi, atau membangun marketplace tiruan menggunakan basis kode identik tanpa izin resmi.
+3. Penghapusan Hak Cipta: Menghapus, mengaburkan, atau mengubah tanda hak cipta, merek dagang, atau atribusi hukum resmi Tuanbagues dan GoSmart Teknologi Creative.
+
+PASAL 4: SISTEM VALIDASI LISENSI
+1. Kunci lisensi yang diterbitkan oleh sistem diverifikasi melalui basis data terpusat (termasuk sinkronisasi Google Sheets / Cloud Database).
+2. Pemegang Hak Cipta berhak menonaktifkan atau membatalkan kunci lisensi yang terbukti disalahgunakan, digunakan untuk aktivitas penipuan, atau dibagikan secara ilegal kepada publik.
+
+PASAL 5: HUKUM YANG BERLAKU DAN PENYELESAIAN SENGKETA
+Perjanjian Lisensi ini diatur, ditafsirkan, dan ditegakkan sesuai dengan ketentuan hukum yang berlaku di wilayah hukum Republik Indonesia. Segala pelanggaran hak cipta akan diproses secara hukum perdata maupun pidana sesuai dengan Undang-Undang Hak Cipta dan regulasi ITE yang berlaku.
+
+PASAL 6: PENAFIAN GARANSI DAN PEMBATASAN TANGGUNG JAWAB
+PERANGKAT LUNAK INI DISEDIAKAN DENGAN PRINSIP "SEBAGAIMANA ADANYA" (AS-IS) TANPA JAMINAN KELAYAKAN DAGANG ATAU KESESUAIAN KHUSUS DI LUAR SPESIFIKASI YANG DICANTUMKAN. DALAM KEADAAN APA PUN, PEMEGANG HAK CIPTA TIDAK BERTANGGUNG JAWAB ATAS SEGALA KERUGIAN TIDAK LANGSUNG, GANGGUAN SERVER PIHAK KETIGA, ATAU HILANGNYA DATA AKIBAT KELALAIAN OPERASIONAL PENGGUNA.
+
+---
+Kontak Resmi & Dukungan Lisensi:
+• Email: tuanbagues@gmail.com
+• Portofolio & Informasi: https://tuanbagues.netlify.app/
+• Hak Cipta © 2026 TUANBAGUES & GoSmart Teknologi Creative. Semua Hak Dilindungi.

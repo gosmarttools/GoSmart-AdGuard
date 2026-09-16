@@ -1,0 +1,6 @@
+{
+  "name": "GoSmart AdGuard - Self-Hosted FullScript & Anti-Bypass System",
+  "description": "Sistem modular mandiri (Self-Hosted) penampil iklan, skrip injeksi otomatis tautan keluar, dan verifikasi Anti-Bypass dengan token & single-use hash 10 detik.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
